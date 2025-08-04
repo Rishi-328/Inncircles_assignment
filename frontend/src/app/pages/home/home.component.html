@@ -1,0 +1,63 @@
+<div class="sidebar">
+  <div class="search-bar">
+    <button matIconButton [matMenuTriggerFor]="sort" class="list-icon">
+      <mat-icon>swap_vert</mat-icon>
+    </button>
+    <mat-menu #sort="matMenu">
+      <button mat-menu-item (click)="onSortChange('fullName')">Helpers Name(A-Z)</button>
+      <button mat-menu-item (click)="onSortChange('employeeId')">Employee ID</button>
+    </mat-menu>
+    <button matIconButton [matMenuTriggerFor]="filter" class="list-icon">
+      <mat-icon>filter_list</mat-icon>
+    </button>
+    <mat-menu #filter="matMenu">
+      <mat-form-field>
+        <mat-label>Service</mat-label>
+        <mat-select [formControl]="service" multiple>
+          <mat-select-trigger>
+            {{service.value?.[0] || ''}}
+            @if ((service.value?.length || 0) > 1) {
+              <span class="example-additional-selection">
+                (+{{(service.value?.length || 0) - 1}})
+              </span>
+            }
+          </mat-select-trigger>
+          @for (service of serviceList; track service) {
+            <mat-option [value]="service">{{service}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Organization</mat-label>
+        <mat-select [formControl]="organization" multiple>
+          <mat-select-trigger>
+            {{organization.value?.[0] || ''}}
+            @if ((organization.value?.length || 0) > 1) {
+              <span class="example-additional-selection">
+                (+{{(organization.value?.length || 0) - 1}})
+              </span>
+            }
+          </mat-select-trigger>
+          @for (organization of organizationList; track organization) {
+            <mat-option [value]="organization">{{organization}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </mat-menu>
+    <mat-form-field appearance="outline" class="search-input">
+      <mat-label>Search</mat-label>
+      <input matInput placeholder="Name, Employee ID, Phone" [(ngModel)]="searchTerm" name="search" (ngModelChange)="getHelperUsers()"/>
+    </mat-form-field>
+    <mat-hint>{{helperUsers.length}} of {{totalCount}} results</mat-hint>
+  </div>
+  <button mat-raised-button color="primary" class="add-btn" (click)="navigateToAddHelper()">+ Add Helper</button>
+</div>
+
+<div class="container">
+  <mat-card class="left">
+    <app-helper-list [helperUsers]="helperUsers" (selectedHelper)="onSelectedHelper($event)"></app-helper-list>
+  </mat-card>
+  <mat-card class="right">
+    <app-helper-detail [helper]="selectedHelper"></app-helper-detail>
+  </mat-card>
+</div>
