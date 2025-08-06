@@ -9,11 +9,13 @@ import { AddHelperComponent } from '../add-helper/add-helper.component';
 import { Router } from '@angular/router'
 import { HelpersService } from '../../services/helpers.service';
 import { FormControl } from '@angular/forms';
+import { serviceTypes,Organization,iconMap } from './../../models/helper.model';
+import { FilterMultiselectComponent } from '../../components/filter-multiselect/filter-multiselect.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule,HelperDetailComponent,HelperListComponent,MaterialModule,AddHelperComponent],
+  imports: [CommonModule,HelperDetailComponent,HelperListComponent,MaterialModule,AddHelperComponent,FilterMultiselectComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -26,10 +28,12 @@ export class HomeComponent implements OnInit {
   totalCount: number = 0;
   sortTerm: string = '';
   searchTerm: string = '';
-  serviceList = ['Maid','Cook','Nurse','Driver'];
-  service = new FormControl('');
-  organizationList = ['ASBL', 'Springs Helpers'];
-  organization = new FormControl('');
+  serviceTypes: string[] = serviceTypes;
+  Organization: string[] = Organization;
+  iconMap: {[key: string]: string} = iconMap;
+  service = new FormControl<string[]>([]);
+  org = new FormControl<string[]>([]);
+  showFilter: boolean = false;
 
   onSelectedHelper(helper: HelperUser){
     this.selectedHelper = helper;
@@ -38,11 +42,15 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/add-helper']);
   }
   getHelperUsers() {
-    this.helperService.getHelpers(this.sortTerm,this.searchTerm)
+    this.helperService.getHelpers(this.sortTerm,this.searchTerm,this.service.value || [],this.org.value || [])
       .subscribe((helpers: HelperUser[]) => {
         this.helperUsers = helpers;
         this.selectedHelper = this.helperUsers.length > 0 ? this.helperUsers[0] : undefined;
       });
+      this.sortTerm = '';
+      this.searchTerm = '';
+      this.service.reset();
+      this.org.reset();
     
   }
   getCount(){
@@ -54,6 +62,16 @@ export class HomeComponent implements OnInit {
   onSortChange(sortTerm: string){
     this.sortTerm = sortTerm;
     this.getHelperUsers();
+  }
+  applyFilter(){
+    this.getHelperUsers();
+    this.showFilter = false;
+    
+  }
+  resetFilter(){
+    this.service.reset();
+    this.org.reset();
+    this.showFilter = false;
   }
 
   ngOnInit(){

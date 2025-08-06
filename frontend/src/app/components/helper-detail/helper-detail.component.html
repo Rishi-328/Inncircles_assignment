@@ -1,10 +1,6 @@
 <div class="details-pane" *ngIf="helper">
   <div class="header">
-    @if(helper.photo){
-      <img [src]="helper.photo" alt="Helper Profile" class="avatar">
-    }@else{
-      <mat-icon matListItemIcon class="avatar">{{ helper.fullName[0] | uppercase }}</mat-icon>
-    }
+    <img [src]="helper.photo?getPhotoUrl():'https://ui-avatars.com/api/?name='+helper.fullName+'&background=random&color=fff&rounded=true&length=2'" alt="Helper Profile" class="avatar">
     <div class="info">
       <div class="helper-name">{{ helper.fullName }}</div>
       <div class="helper-role">{{ helper.typeOfService }}</div>

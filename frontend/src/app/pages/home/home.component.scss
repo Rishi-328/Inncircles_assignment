@@ -27,6 +27,15 @@
     gap: 1rem;
     flex-grow: 1;
 
+    .search-input{
+      input[type="search"]{
+        &::-webkit-search-cancel-button{
+          cursor: pointer;
+          position: relative;  
+        }
+      }
+   }
+
     .list-icon {
       cursor: pointer;
       color: #444;
@@ -42,6 +51,20 @@
         border-color: #999;
       }
     }
+    .filter-card{
+        padding: 1.5rem;
+        position: absolute;
+        top: 9.5rem; 
+        left: 80px;
+        z-index: 1000;
+        .filter-btns {  
+          display: flex;
+          justify-content: end;
+          gap: 1.5rem;
+          margin-top: 1rem;
+        }
+      }
+    
   }
   .add-btn{
     margin-left: 1rem;

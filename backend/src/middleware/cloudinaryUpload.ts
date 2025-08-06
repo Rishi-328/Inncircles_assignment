@@ -8,7 +8,7 @@ const storage = new CloudinaryStorage({
     params: async (req, file) => ({
         folder: 'helper_upload',
         public_id: `${file.fieldname}-${Date.now()}`,
-        resource_type: file.mimetype === 'application/pdf' ? 'raw' : 'auto'
+        resource_type: 'image'
     
 
     })

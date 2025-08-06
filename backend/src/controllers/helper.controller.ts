@@ -6,7 +6,6 @@ export const createHelper = async (req: Request, res: Response) => {
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
-    console.log(files);
     const photoUrl = files['photo']?.[0]?.path || null;
     const kycUrl = files['kycDocument']?.[0]?.path || null;
     const additionalUrl = files['additionalDocuments']?.[0]?.path || null;
@@ -31,26 +30,28 @@ export const createHelper = async (req: Request, res: Response) => {
 
 export const getHelpers = async (req: Request, res: Response) => {
     try{
-        const sort = req.query.sort as string | undefined;
-        const search = req.query.search as string | undefined;
+        const {sortBy,searchTerm,service,org} = req.body;
         let filter: any = {};
-        
-        if(search){
-          const regex = new RegExp(search,'i');
-          filter = {
-            $or: [
+        if(searchTerm){
+          const regex = new RegExp(searchTerm,'i');
+          filter.$or = [
               {fullName: regex},
-              {employeeId: isNaN(+search) ? -1 : +search},
+              {employeeId: isNaN(+searchTerm) ? -1 : +searchTerm},
               {phone: regex}
             ]
-          }
         }
+        if(service?.length > 0){
+          filter.typeOfService = { $in: service };
+        }
+        if(org?.length > 0){
+          filter.organizationName = { $in: org }; 
+        } 
         let query = HelperModel.find(filter);
-        if(sort){
-          query = query.sort({[sort]:1});
+        if(sortBy){
+          query = query.sort({[sortBy]:1});
         }
         const helpers = await query;
-        if(helpers.length === 0 && !search){
+        if(helpers.length === 0 && !searchTerm){
             res.status(404).json({message: 'No helpers found'});
         }else{
             res.status(200).json(helpers);
@@ -70,3 +71,61 @@ export const getCount = async (req: Request, res: Response)=>{
   }
   
 }
+
+export const getHelperById = async (req: Request, res: Response) => {
+  try {
+    const {id} = req.params;
+    const helper = await HelperModel.findOne({employeeId: id});
+    if (helper) {
+      res.status(200).json(helper);
+    }else{
+      res.status(404).json({ message: 'Helper not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get helper', error });
+  }
+};
+
+export const deleteHelper = async (req: Request, res: Response)=>{
+  try{
+    const {id} = req.params;
+    const helper = await HelperModel.findOneAndDelete({employeeId: +id});
+    if(helper){   
+      res.status(200).json({message: `Deleted ${helper.fullName}`});   
+    }
+    else{
+      res.status(404).json({message: 'Helper not found'});
+    }    
+
+  }catch(error){
+    res.status(500).json({message: 'Failed to delete helper', error});
+  }
+}
+
+export const updateHelper = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
+    const photoUrl = files['photo']?.[0]?.path || null;
+    const kycUrl = files['kycDocument']?.[0]?.path || null;
+    const additionalUrl = files['additionalDocuments']?.[0]?.path || null;
+
+    const updateData = {
+      ...req.body,
+      photo: photoUrl,
+      kycDocument: kycUrl,
+      additionalDocuments: additionalUrl,
+    };
+    const helper = await HelperModel.findOneAndUpdate({ employeeId: +id },updateData,{ new: true });
+
+    if (helper) {
+      res.status(200).json({ message: 'Changes Saved!'});
+    } else {
+      res.status(404).json({ message: 'Helper not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update helper', error });
+  }
+};

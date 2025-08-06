@@ -9,12 +9,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { ToastService } from '../../services/toast.service';
 import { AddHelperReviewComponent } from '../../components/add-helper-review/add-helper-review.component';
 import { HelpersService } from '../../services/helpers.service';
-import { Router } from '@angular/router';
+import { Router,RouterLink, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-add-helper',
   standalone: true,
-  imports: [MaterialModule, CommonModule,KycUploadComponent,AddHelperReviewComponent],
+  imports: [MaterialModule, CommonModule,KycUploadComponent,AddHelperReviewComponent,RouterModule],
   templateUrl: './add-helper.component.html',
   styleUrls: ['./add-helper.component.scss']
 })
@@ -78,7 +78,6 @@ export class AddHelperComponent implements OnInit {
 
   onPhotoSelected(event: any) {
     const file = event.target.files[0];
-    console.log(file);
     if (file) {
       const allowedTypes = ['image/png', 'image/jpeg'];
       if (!allowedTypes.includes(file.type)) {
@@ -98,7 +97,6 @@ export class AddHelperComponent implements OnInit {
 
   onFileSelected(event: Event) {
     const target = event.target as HTMLInputElement;
-    console.log(target.files);
     if (target.files && target.files.length > 0) {
       this.helperForm.patchValue({ additionalDocuments: target.files[0] });
     }
@@ -124,13 +122,11 @@ export class AddHelperComponent implements OnInit {
 
   isAllSelected(): boolean {
     const selectedValues = this.helperForm.get('languages')?.value || [];
-    console.log(selectedValues);
     return selectedValues.length === this.languages.length;
   }
 
   isIndeterminate(): boolean {
     const selectedValues = this.helperForm.get('languages')?.value || [];
-    console.log(selectedValues);
     return selectedValues.length > 0 && selectedValues.length < this.languages.length;
   }
 
@@ -149,7 +145,6 @@ export class AddHelperComponent implements OnInit {
     });   
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log(result);
         this.helperForm.patchValue({ kycDocument: result.file});
         this.helperForm.patchValue({ kycDocumentType: result.type });
       }
@@ -162,19 +157,24 @@ export class AddHelperComponent implements OnInit {
     }
     const formData = new FormData();
     const formValue = this.helperForm.value;
-    Object.keys(formValue).forEach(key=>{
-      formData.append(key, formValue[key]);
-    })
+    Object.keys(formValue).forEach(key => {
+        const value = formValue[key];
+        if (Array.isArray(value)) {
+          value.forEach((item, index) => {
+            formData.append(`${key}[${index}]`, item);
+          });
+        } else {
+          formData.append(key, value);
+        }
+      });
 
     this.helperService.addHelper(formData)
       .subscribe({
         next: (response)=>{
-          console.log('Helper added successfully:', response);
           this.toastService.success('Helper added successfully');
           this.router.navigate(['/home']);
         }
       })
-    console.log('Form Submitted', this.helperForm.value);
   }
 
 
